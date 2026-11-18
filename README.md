@@ -11,7 +11,7 @@ PDF ভিউয়ার · **PDF গ্যালারি** (ফোল্ড�
 
 ## GitHub Pages-এ হোস্ট করার নিয়ম
 1. github.com-এ নতুন repository খুলুন (যেমন `pdf-toolbox`), Public রাখুন।
-2. এই ফোল্ডারের **সব ফাইল ও `icons` ফোল্ডার** repository-তে আপলোড করুন (`.nojekyll` ফাইলসহ)। ফাইলগুলো যেন repository-র একদম ওপরের স্তরে থাকে, কোনো ফোল্ডারের ভেতরে নয়।
+2. এই ফোল্ডারের **সব ফাইল ** repository-তে আপলোড করুন (`.nojekyll` ফাইলসহ)। ফাইলগুলো যেন repository-র একদম ওপরের স্তরে থাকে, কোনো ফোল্ডারের ভেতরে নয়।
 3. **Settings → Pages** এ যান। **Source:** *Deploy from a branch*, **Branch:** `main`, ফোল্ডার `/ (root)` বেছে **Save** চাপুন।
 4. ১-২ মিনিট পরে লিংক পাবেন: `https://আপনার-ইউজারনেম.github.io/pdf-toolbox/`
 
@@ -22,7 +22,7 @@ PDF ভিউয়ার · **PDF গ্যালারি** (ফোল্ড�
 ইনস্টলের পর হোম স্ক্রিনে এই অ্যাপের আইকন দেখা যাবে।
 
 ## ফাইল তালিকা
-`index.html` (অ্যাপ) · `manifest.webmanifest` (ইনস্টলের তথ্য) · `sw.js` (অফলাইন ক্যাশ) · `icons/` (আইকন) · `.nojekyll` · `LICENSE`
+`index.html` (অ্যাপ) · `manifest.webmanifest` (ইনস্টলের তথ্য) · `sw.js` (অফলাইন ক্যাশ) · `` (আইকন) · `.nojekyll` · `LICENSE`
 
 ## প্রযুক্তি
 [pdf-lib](https://pdf-lib.js.org/) ও [PDF.js](https://mozilla.github.io/pdf.js/) (cdnjs থেকে লোড হয়)।
