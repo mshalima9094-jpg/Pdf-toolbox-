@@ -25,7 +25,7 @@ label{display:block;margin:12px 0 4px;color:var(--mut);font-size:14px}
 #st{margin-top:12px;font-size:14px;color:var(--mut)}
 .im{display:flex;align-items:center;gap:10px;margin-top:10px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px}
 .im img{height:70px;border-radius:6px}.im button{margin-left:auto}
-.hide{display:none}
+.hide{display:none}.gr{display:flex;gap:8px;align-items:center;margin-top:10px}.gr input{flex:1}.gb{border:0;border-radius:10px;padding:9px 12px;background:var(--ac);color:#fff;font:600 14px inherit;cursor:pointer;white-space:nowrap}
 .hero{display:block;width:100%;height:auto;margin:6px 0 14px;border-radius:22px;filter:drop-shadow(0 12px 18px rgba(6,56,42,.35))}
 #home>h1{background:linear-gradient(135deg,#13a36b,#0e7fa8);color:#fff;padding:18px 16px;border-radius:18px;margin:6px 0 14px;font-size:22px;box-shadow:0 6px 18px rgba(19,163,107,.28)}#home>h1 small{display:block;color:#ffffffcc!important;font-size:12.5px!important;font-weight:400;margin-top:2px}
 body{background:radial-gradient(900px 420px at 50% -80px,hsl(165 65% 82%),transparent 65%),var(--bg);background-attachment:fixed;min-height:100vh}
@@ -118,6 +118,58 @@ const docx=ps=>zip({'[Content_Types].xml':X+`<Types xmlns="http://schemas.openxm
 const colL=i=>{let s='';i++;while(i){s=String.fromCharCode(65+(i-1)%26)+s;i=Math.floor((i-1)/26)}return s};
 const xlsx=rows=>zip({'[Content_Types].xml':X+`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${CT}spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="${CT}spreadsheetml.worksheet+xml"/></Types>`,'_rels/.rels':X+`<Relationships xmlns="${RL}"><Relationship Id="rId1" Type="${OD}/officeDocument" Target="xl/workbook.xml"/></Relationships>`,'xl/workbook.xml':X+`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${OD}/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>`,'xl/_rels/workbook.xml.rels':X+`<Relationships xmlns="${RL}"><Relationship Id="rId1" Type="${OD}/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`,'xl/worksheets/sheet1.xml':X+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows.map((r,i)=>`<row r="${i+1}">`+r.map((c,j)=>`<c r="${colL(j)}${i+1}" t="inlineStr"><is><t>${esc(c)}</t></is></c>`).join('')+'</row>').join('')+'</sheetData></worksheet>'});
 const colN=r=>{let n=0;for(const ch of r.replace(/\d/g,''))n=n*26+ch.charCodeAt(0)-64;return n-1};
+const fmt=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
+const gdb=()=>new Promise((ok,no)=>{const r=indexedDB.open('pdfgallery',1);r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore('folders',{keyPath:'name'});d.createObjectStore('files',{keyPath:'id',autoIncrement:true})};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+async function gx(s,m,fn){const d=await gdb();return new Promise((ok,no)=>{const t=d.transaction(s,m),r=fn(t.objectStore(s));t.oncomplete=()=>ok(r.result);t.onerror=t.onabort=()=>no(t.error)})}
+const gAll=s=>gx(s,'readonly',o=>o.getAll()),gPut=(s,v)=>gx(s,'readwrite',o=>o.put(v)),gDel=(s,k)=>gx(s,'readwrite',o=>o.delete(k));
+async function gal(o){
+ const B=(t,c,fn)=>{const b=document.createElement('button');b.className=c;b.textContent=t;b.onclick=fn;return b};
+ const bar=()=>{const d=document.createElement('div');d.className='gr';return d};
+ async function home(){
+  o.innerHTML='';st('');
+  const fs=(await gAll('folders')).sort((a,b)=>a.name.localeCompare(b.name)),fl=await gAll('files');
+  const row=bar();row.innerHTML='<input type="text" id="gn" placeholder="নতুন ফোল্ডারের নাম">';
+  row.append(B('＋ তৈরি','gb',async()=>{const n=$('#gn').value.trim();if(!n)return;if(fs.some(x=>x.name===n)){st('এই নামে ফোল্ডার আছে');return}await gPut('folders',{name:n});home()}));
+  o.append(row);
+  const g=document.createElement('div');g.className='g';g.style.marginTop='12px';
+  fs.forEach((f,i)=>{const n=fl.filter(x=>x.folder===f.name).length,c=document.createElement('button');c.className='c';c.style.setProperty('--h',(i*47+120)%360);c.innerHTML=`<i>📁</i><b>${esc(f.name)}</b><small>${n}টি PDF</small>`;c.onclick=()=>folder(f.name);g.append(c)});
+  o.append(g);
+  if(!fs.length)o.insertAdjacentHTML('beforeend','<div class="fl">আগে একটি ফোল্ডার বানান, তারপর তাতে PDF যোগ করুন। ফাইলগুলো আপনার ফোনের ব্রাউজারেই সেভ থাকে।</div>');
+ }
+ async function folder(name){
+  o.innerHTML='';st('');
+  const top=bar();top.append(B('← ফোল্ডার','b',home));o.append(top);
+  const t=document.createElement('h2');t.textContent='📁 '+name;o.append(t);
+  const lab=document.createElement('label');lab.className='drop';lab.innerHTML='➕ এই ফোল্ডারে PDF যোগ করুন<input type="file" accept="application/pdf" multiple hidden>';
+  lab.querySelector('input').onchange=async e=>{for(const f of e.target.files)await gPut('files',{folder:name,name:f.name,size:f.size,date:Date.now(),blob:f});try{navigator.storage.persist()}catch(_){}folder(name)};
+  o.append(lab);
+  const fs=await gAll('folders'),L=(await gAll('files')).filter(x=>x.folder===name).sort((a,b)=>b.date-a.date);
+  if(!L.length)o.insertAdjacentHTML('beforeend','<div class="fl">এখনো কোনো PDF নেই।</div>');
+  L.forEach(f=>{
+   const d=document.createElement('div');d.className='im';d.style.flexWrap='wrap';
+   d.innerHTML=`<span style="font-size:26px">📄</span><div style="min-width:0;flex:1"><b style="word-break:break-all">${esc(f.name)}</b><div class="fl" style="margin:0">${fmt(f.size)} · ${new Date(f.date).toLocaleDateString('bn-BD')}</div></div>`;
+   const a=document.createElement('div');a.style.cssText='display:flex;gap:8px;width:100%;align-items:center';
+   a.append(B('👁️ খুলুন','gb',()=>view(f,name)));
+   const sel=document.createElement('select');sel.style.cssText='flex:1;padding:8px;border-radius:10px';sel.innerHTML='<option>📂 সরান…</option>'+fs.filter(x=>x.name!==name).map(x=>`<option>${esc(x.name)}</option>`).join('');
+   sel.onchange=async()=>{if(sel.selectedIndex<1)return;f.folder=sel.value;await gPut('files',f);folder(name)};
+   a.append(sel);
+   const del=B('🗑️','b',async()=>{if(!del.q){del.q=1;del.textContent='নিশ্চিত?';return}await gDel('files',f.id);folder(name)});
+   a.append(del);d.append(a);o.append(d)});
+  const fd=B('🗑️ ফোল্ডার মুছুন','b',async()=>{if(!fd.q){fd.q=1;fd.textContent='নিশ্চিত? ভেতরের সব PDF মুছে যাবে';return}for(const f of L)await gDel('files',f.id);await gDel('folders',name);home()});
+  fd.style.marginTop='16px';o.append(fd);
+ }
+ async function view(f,name){
+  o.innerHTML='';let z=100,tok=0;
+  const top=bar();top.append(B('← ফিরুন','b',()=>folder(name)),B('➖','gb',()=>{z=Math.max(50,z-25);draw()}),B('➕','gb',()=>{z=Math.min(300,z+25);draw()}),B('💾 সেভ','gb',()=>save(f.name,f.blob)));
+  const t=document.createElement('div');t.className='fl';t.textContent=f.name;
+  const box=document.createElement('div');box.style.overflowX='auto';o.append(top,t,box);
+  const d=await pdfjsLib.getDocument({data:new Uint8Array(await f.blob.arrayBuffer())}).promise;
+  async function draw(){const my=++tok;box.innerHTML='';const W=Math.min(o.clientWidth||360,900)*z/100,dpr=window.devicePixelRatio||1;for(let i=1;i<=d.numPages;i++){if(my!==tok)return;st(`পেজ ${i}/${d.numPages}`);const pg=await d.getPage(i),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:W/v0.width*dpr}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;c.style.cssText=`width:${W}px;height:${v.height/dpr}px;display:block;margin:10px 0;border-radius:6px;box-shadow:0 6px 16px -8px rgba(0,0,0,.5);background:#fff`;box.append(c);await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise}st('')}
+  draw();
+ }
+ await home();
+}
+T.unshift(['দেখুন 👁️',[{id:'view',ic:'👁️',t:'PDF ভিউয়ার',d:'PDF পড়ুন ও জুম করুন',P:[{k:'z',l:'জুম % (50-300)',d:'100'},R],run:async(f,p)=>{const d=await pjs(f[0]),o=$('#out');o.innerHTML='';const W=Math.min(o.clientWidth||360,900)*(Math.max(50,Math.min(300,+p.z||100))/100),dpr=window.devicePixelRatio||1;o.style.overflowX='auto';for(const i of rng(p.r,d.numPages)){st(`পেজ ${i+1}/${d.numPages} লোড হচ্ছে…`);const pg=await d.getPage(i+1),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:W/v0.width*dpr}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;c.style.cssText=`width:${W}px;height:${v.height/dpr}px;display:block;margin:10px 0;border-radius:6px;box-shadow:0 6px 16px -8px rgba(0,0,0,.5);background:#fff`;o.append(c);await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise}st(`✅ ${d.numPages} পেজ`)}},{id:'gal',ic:'🗂️',t:'PDF গ্যালারি',d:'ফোল্ডারে PDF সাজিয়ে রাখুন',ui:o=>gal(o).catch(e=>st('❌ সংরক্ষণ চালু নেই: '+(e.message||e)))}]]);
 T.push(['নতুন টুল ✨',[
  {id:'tr',ic:'🌍',t:'অনুবাদ',d:'PDF-এর লেখা অনুবাদ করে Word-এ',P:[{k:'l',l:'কোন ভাষায় (bn, en, hi, ar, ur, fr…)',d:'bn'},{k:'key',l:'Gemini API কী (ফ্রি, ঐচ্ছিক) — ফাঁকা রাখলে MyMemory',d:''},R],run:async(f,p)=>{const s=window.claude?await claude.use('sample'):null;if(p.key){try{localStorage.setItem('gkey',p.key)}catch(e){}}const pg=await text(f[0],i=>lines(i).map(l=>l.join(' ')).join('\n')),o=[];for(const i of rng(p.r,pg.length)){if(!pg[i].trim())continue;st(`পেজ ${i+1} অনুবাদ হচ্ছে…`);const r=s?(await s(`Translate the following text into ${p.l||'Bengali'}. Output only the translation, keep line breaks.\n\n`+pg[i])).text:(p.key?await gem(pg[i],p.l,p.key):await mm(pg[i],p.l));o.push(...r.split('\n'))}await save('translated.docx',docx(o));st('✅ translated.docx সেভ হলো')}},
  {id:'p2w',ic:'📘',t:'PDF → Word',d:'DOCX ফাইলে রূপান্তর',run:async f=>{const o=(await text(f[0],i=>lines(i).map(l=>l.join(' ')))).flat();await save('document.docx',docx(o));st('✅ সম্পন্ন (শুধু টেক্সট যায়, ছবি/লেআউট নয়)')}},
@@ -127,7 +179,7 @@ T.push(['নতুন টুল ✨',[
 ]]);
 function home(f=''){window.ci=0;const l=$('#list');l.innerHTML='';T.forEach(([h,a])=>{a=a.filter(x=>(x.t+x.d).toLowerCase().includes(f.toLowerCase()));if(!a.length)return;l.insertAdjacentHTML('beforeend',`<h2>${h}</h2>`);const g=document.createElement('div');g.className='g';a.forEach(x=>{const b=document.createElement('button');b.className='c';b.style.setProperty('--h',(window.ci=(window.ci||0)+37)%360);b.innerHTML=`<i>${x.ic}</i><b>${x.t}</b><small>${x.d}</small>`;b.onclick=()=>open(x);g.append(b)});l.append(g)})}
 let cur,files=[];
-function open(x){cur=x;files=[];$('#home').classList.add('hide');$('#tool').classList.remove('hide');$('#tt').textContent=x.ic+' '+x.t;$('#td').textContent=x.d;$('#fn').textContent='';$('#st').textContent='';$('#out').innerHTML='';const fi=$('#fi');fi.value='';fi.multiple=!!x.multi;fi.accept=x.accept||'application/pdf';$('#ps').innerHTML=(x.P||[]).map(p=>`<label>${p.l}</label><input type="text" id="p_${p.k}" value="${p.d||''}" placeholder="${p.ph||''}">`).join('');try{const k=localStorage.getItem('gkey'),e=$('#p_key');if(e){e.type='password';e.autocomplete='off';if(k)e.value=k}}catch(e){}window.scrollTo(0,0)}
+function open(x){cur=x;files=[];$('#home').classList.add('hide');$('#tool').classList.remove('hide');$('#tt').textContent=x.ic+' '+x.t;$('#td').textContent=x.d;$('#fn').textContent='';$('#st').textContent='';$('#out').innerHTML='';const fi=$('#fi');fi.value='';fi.multiple=!!x.multi;fi.accept=x.accept||'application/pdf';$('#ps').innerHTML=(x.P||[]).map(p=>`<label>${p.l}</label><input type="text" id="p_${p.k}" value="${p.d||''}" placeholder="${p.ph||''}">`).join('');try{const k=localStorage.getItem('gkey'),e=$('#p_key');if(e){e.type='password';e.autocomplete='off';if(k)e.value=k}}catch(e){}const cu=!!x.ui;['#dz','#fn','#ps','#go'].forEach(q=>$(q).classList.toggle('hide',cu));if(cu)x.ui($('#out'));window.scrollTo(0,0)}
 $('#fi').onchange=e=>{files=[...e.target.files];$('#fn').textContent=files.map(f=>f.name+' ('+(f.size/1024).toFixed(0)+'KB)').join(', ')};
 $('#back').onclick=()=>{speechSynthesis.cancel();$('#tool').classList.add('hide');$('#home').classList.remove('hide')};
 $('#q').oninput=e=>home(e.target.value);
