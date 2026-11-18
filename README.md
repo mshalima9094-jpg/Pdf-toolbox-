@@ -1,0 +1,34 @@
+# 📄 PDF টুলবক্স (PDF Toolbox)
+
+সব PDF কাজের একটি ফ্রি ওয়েব অ্যাপ। ফাইল ব্রাউজারেই প্রসেস হয়, কোনো সার্ভারে যায় না।
+**Created by Mufti Mamunur Rashid**
+
+## ফিচার
+কমপ্রেস · মার্জ · স্প্লিট · রোটেট · পেজ ডিলিট · রিঅর্ডার · পেজ নম্বর · ওয়াটারমার্ক · Read Aloud · PDF→ইমেজ/টেক্সট/HTML/CSV/Word/Excel · ইমেজ→PDF · টেক্সট→PDF · Excel→PDF · Unlock PDF · অনুবাদ
+
+> **অনুবাদ** টুল GitHub Pages-এ ফ্রি MyMemory সার্ভিস ব্যবহার করে (ইন্টারনেট লাগবে)। ভাষার কোড দিন, যেমন `bn`, `en`, `hi`। এতে দৈনিক ফ্রি লিমিট আছে এবং অনুবাদের লেখা MyMemory সার্ভারে যায়। গোপন ডকুমেন্টে ব্যবহার করবেন না।
+> **Lock PDF** (পাসওয়ার্ড বসানো) এখনো নেই।
+
+## GitHub Pages-এ হোস্ট করার নিয়ম
+1. github.com-এ নতুন repository খুলুন (যেমন `pdf-toolbox`), Public রাখুন।
+2. এই ফোল্ডারের **সব ফাইল ও `icons` ফোল্ডার** repository-তে আপলোড করুন (`.nojekyll` ফাইলসহ)। ফাইলগুলো যেন repository-র একদম ওপরের স্তরে থাকে, কোনো ফোল্ডারের ভেতরে নয়।
+3. **Settings → Pages** এ যান। **Source:** *Deploy from a branch*, **Branch:** `main`, ফোল্ডার `/ (root)` বেছে **Save** চাপুন।
+4. ১-২ মিনিট পরে লিংক পাবেন: `https://আপনার-ইউজারনেম.github.io/pdf-toolbox/`
+
+## ফোনে অ্যাপ হিসেবে ইনস্টল
+- **Android (Chrome):** লিংক খুলে ⋮ মেনু → **Install app / Add to Home screen**।
+- **iPhone (Safari):** Share বাটন → **Add to Home Screen**।
+
+ইনস্টলের পর হোম স্ক্রিনে এই অ্যাপের আইকন দেখা যাবে।
+
+## ফাইল তালিকা
+`index.html` (অ্যাপ) · `manifest.webmanifest` (ইনস্টলের তথ্য) · `sw.js` (অফলাইন ক্যাশ) · `icons/` (আইকন) · `.nojekyll` · `LICENSE`
+
+## প্রযুক্তি
+[pdf-lib](https://pdf-lib.js.org/) ও [PDF.js](https://mozilla.github.io/pdf.js/) (cdnjs থেকে লোড হয়)।
+
+## অনুবাদে ফ্রি Gemini AI ব্যবহার (ঐচ্ছিক)
+ভালো মানের অনুবাদের জন্য [Google AI Studio](https://aistudio.google.com) থেকে বিনামূল্যে API কী নিন (কার্ড লাগে না), তারপর অনুবাদ টুলের "Gemini API কী" ঘরে বসান।
+- কী শুধু আপনার ফোনের ব্রাউজারে সেভ থাকে, repository-তে বা কোডে কখনো লিখবেন না।
+- ফাঁকা রাখলে ফ্রি MyMemory সার্ভিস ব্যবহার হবে।
+- ফ্রি টিয়ারের লেখা Google তাদের পণ্য উন্নত করতে ব্যবহার করতে পারে, তাই গোপন ডকুমেন্টে ব্যবহার করবেন না।
